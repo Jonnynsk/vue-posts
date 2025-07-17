@@ -19,7 +19,7 @@ watch(
     <PrimaryButton text="Назад" @click="router.push('/')" />
     <form
       class="add-post-form"
-      @submit.prevent="postsStore.handleAddPost(router)"
+      @submit.prevent="postsStore.handleAddPost()"
     >
       <input
         v-model="postsStore.title"

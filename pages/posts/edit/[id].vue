@@ -27,12 +27,7 @@ watch(
     <form
       class="add-post-form"
       @submit.prevent="
-        postsStore.editPost(
-          Number(id),
-          postsStore.title,
-          postsStore.body,
-          router
-        )
+        postsStore.editPost(Number(id), postsStore.title, postsStore.body)
       "
     >
       <input

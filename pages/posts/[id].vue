@@ -1,12 +1,19 @@
 <script setup lang="ts">
 const route = useRoute();
 const router = useRouter();
+const NuxtApp = useNuxtApp();
 const { id } = route.params;
 
 const postsStore = usePostsStore();
 
-const { data, pending } = await useAsyncData(`post-${id}`, () =>
-  postsStore.fetchPost(Number(id)).then(() => postsStore.post)
+const { data, pending } = await useAsyncData(
+  `post-${id}`,
+  () => postsStore.fetchPost(Number(id)).then(() => postsStore.post),
+  {
+    getCachedData: (key) => {
+      return NuxtApp.payload.data[key];
+    },
+  }
 );
 </script>
 

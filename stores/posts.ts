@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import type { Router } from "vue-router";
 
 const url = "https://jsonplaceholder.typicode.com/posts";
 
@@ -60,7 +59,7 @@ export const usePostsStore = defineStore("posts", {
         this.loadingPost = false;
       }
     },
-    async editPost(id: number, title: string, body: string, router: Router) {
+    async editPost(id: number, title: string, body: string) {
       await $fetch(`${url}/${id}`, {
         method: "PATCH",
         body: { title, body },
@@ -73,7 +72,7 @@ export const usePostsStore = defineStore("posts", {
         this.posts[idx].title = title;
         this.posts[idx].body = body;
       }
-      router.push("/");
+      navigateTo("/");
     },
     async handleDeletePost(id: number) {
       await $fetch(`${url}/${id}`, { method: "DELETE" });
@@ -85,7 +84,7 @@ export const usePostsStore = defineStore("posts", {
       const filtered = allPosts.filter((post) => post.title.includes(query));
       this.posts = filtered;
     },
-    async handleAddPost(router: Router) {
+    async handleAddPost() {
       await $fetch(url, {
         method: "POST",
         body: { title: this.title, body: this.body },
@@ -103,7 +102,7 @@ export const usePostsStore = defineStore("posts", {
       this.posts.unshift(newPost);
       this.title = "";
       this.body = "";
-      router.push("/");
+      navigateTo("/");
     },
   },
 });
