@@ -9,4 +9,8 @@ export default defineNuxtConfig({
       supabaseKey: process.env.SUPABASE_ANON_KEY,
     },
   },
+  ssr: false,
+  nitro: {
+    preset: "static",
+  },
 });
