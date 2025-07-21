@@ -1,28 +1,28 @@
 <script setup lang="ts">
 const route = useRoute();
 const router = useRouter();
-const NuxtApp = useNuxtApp();
 const { id } = route.params;
 
 const postsStore = usePostsStore();
 
-const { data, pending } = await useAsyncData(
-  `post-${id}`,
-  () => postsStore.fetchPost(Number(id)).then(() => postsStore.post),
-  {
-    getCachedData: (key) => {
-      return NuxtApp.payload.data[key];
-    },
-  }
-);
+await postsStore.fetchPost(Number(id));
 </script>
 
 <template>
   <div class="container">
     <PrimaryButton text="Назад" @click="router.push('/')" />
-    <div v-if="!pending" class="post-card">
-      <h1 class="post-title">{{ data?.title }}</h1>
-      <p class="post-body">{{ data?.body }}</p>
+    <div v-if="!postsStore.loadingPost" class="post-card">
+      <h1 class="post-title">{{ postsStore.post?.title }}</h1>
+      <p class="post-body">{{ postsStore.post?.body }}</p>
+      <NuxtTime
+        :datetime="postsStore.post?.created_at || ''"
+        year="2-digit"
+        month="2-digit"
+        day="numeric"
+        hour="2-digit"
+        minute="2-digit"
+        class="post-time"
+      />
     </div>
     <p v-else class="loading">Загрузка...</p>
   </div>

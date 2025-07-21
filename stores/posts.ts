@@ -1,16 +1,18 @@
 import { defineStore } from "pinia";
 
-const url = "https://jsonplaceholder.typicode.com/posts";
+import { useSupabase } from "~/composables/useSupabase";
 
 interface Post {
   id: number;
   title: string;
   body: string;
+  created_at: string;
 }
 
 export const usePostsStore = defineStore("posts", {
   state: () => ({
     posts: [] as Array<Post>,
+    allPosts: [] as Array<Post>,
     post: {} as Post | null,
     loading: false,
     loadingPost: false,
@@ -19,6 +21,9 @@ export const usePostsStore = defineStore("posts", {
     isDeleteModalOpened: false,
     postIdToDelete: 0,
   }),
+  getters: {
+    supabase: () => useSupabase(),
+  },
   actions: {
     openDeleteModal(id: number) {
       this.postIdToDelete = id;
@@ -31,9 +36,12 @@ export const usePostsStore = defineStore("posts", {
       this.loading = true;
 
       try {
-        const posts = await $fetch<Post[]>(url);
-        this.posts = posts;
-        return posts;
+        let { data: supabasePosts } = await this.supabase
+          .from("posts")
+          .select("*");
+        this.allPosts = supabasePosts as Post[];
+        this.posts = supabasePosts as Post[];
+        return supabasePosts;
       } catch (e) {
         console.log(e);
       } finally {
@@ -44,65 +52,65 @@ export const usePostsStore = defineStore("posts", {
       this.loadingPost = true;
 
       try {
-        const post = await $fetch<Post>(`${url}/${id}`);
-        this.post = post;
-        return post;
+        let { data: supabasePost } = await this.supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id);
+
+        this.post = supabasePost?.[0] as Post;
+        return supabasePost;
       } catch (e) {
-        const found = this.posts.find((p) => p.id === id);
-        if (found) {
-          this.post = found;
-          return found;
-        }
-        this.post = null;
         console.log(e);
       } finally {
         this.loadingPost = false;
       }
     },
     async editPost(id: number, title: string, body: string) {
-      await $fetch(`${url}/${id}`, {
-        method: "PATCH",
-        body: { title, body },
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      });
-      const idx = this.posts.findIndex((p) => p.id === id);
-      if (idx !== -1) {
-        this.posts[idx].title = title;
-        this.posts[idx].body = body;
+      try {
+        await this.supabase
+          .from("posts")
+          .update({ title, body })
+          .eq("id", id)
+          .select();
+
+        navigateTo("/");
+      } catch (error) {
+        console.log(error);
       }
-      navigateTo("/");
     },
     async handleDeletePost(id: number) {
-      await $fetch(`${url}/${id}`, { method: "DELETE" });
-      this.posts = this.posts.filter((post) => post.id !== id);
+      try {
+        await this.supabase.from("posts").delete().eq("id", id);
+        this.posts = this.posts.filter((post) => post.id !== id);
+        this.allPosts = this.allPosts.filter((post) => post.id !== id);
+      } catch (error) {
+        console.log(error);
+      }
     },
     async handleFilterPosts(event: Event) {
       const query = (event.target as HTMLInputElement).value;
-      const allPosts = await $fetch<Post[]>(url);
-      const filtered = allPosts.filter((post) => post.title.includes(query));
-      this.posts = filtered;
+      if (query.trim() === "") {
+        this.posts = [...this.allPosts];
+      } else {
+        const filtered = this.allPosts.filter((post) =>
+          post.title.toLowerCase().includes(query.toLowerCase())
+        );
+        this.posts = filtered;
+      }
     },
     async handleAddPost() {
-      await $fetch(url, {
-        method: "POST",
-        body: { title: this.title, body: this.body },
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      });
+      try {
+        await this.supabase
+          .from("posts")
+          .insert([{ title: this.title, body: this.body }])
+          .select();
 
-      const newPost = {
-        id: this.posts.length + 1,
-        title: this.title,
-        body: this.body,
-      };
-
-      this.posts.unshift(newPost);
-      this.title = "";
-      this.body = "";
-      navigateTo("/");
+        this.title = "";
+        this.body = "";
+        navigateTo("/");
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
 });

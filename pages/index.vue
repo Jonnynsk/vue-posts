@@ -5,7 +5,7 @@ const router = useRouter();
 
 const postsStore = usePostsStore();
 
-await callOnce("posts", () => postsStore.fetchPosts());
+await postsStore.fetchPosts();
 
 const handleDeletePost = (id: number) => {
   postsStore.handleDeletePost(id).then(() => {
@@ -26,22 +26,42 @@ const handleDeletePost = (id: number) => {
       <PrimaryButton text="Добавить пост" @click="router.push('/post')" />
     </div>
     <div v-if="!postsStore.loading">
-      <div v-for="post in postsStore.posts" :key="post.id" class="post-card">
-        <NuxtLink :to="`/posts/${post.id}`" class="post-title-link">
-          <h1 class="post-title">{{ post.title }}</h1>
-        </NuxtLink>
-        <p class="post-body">{{ post.body }}</p>
-        <div class="post-actions">
-          <PrimaryButton
-            text="Удалить"
-            class="secondary-btn"
-            @click="postsStore.openDeleteModal(post.id)"
-          />
-          <PrimaryButton
-            text="Редактировать"
-            @click="router.push(`/posts/edit/${post.id}`)"
-          />
+      <div v-if="postsStore.posts.length > 0">
+        <div
+          v-for="post in [...postsStore.posts].reverse()"
+          :key="post.id"
+          class="post-card"
+        >
+          <NuxtLink :to="`/posts/${post.id}`" class="post-title-link">
+            <h1 class="post-title">{{ post.title }}</h1>
+          </NuxtLink>
+          <p class="post-body">{{ post.body }}</p>
+          <div class="post-actions">
+            <div class="post-actions-buttons">
+              <PrimaryButton
+                text="Удалить"
+                class="secondary-btn"
+                @click="postsStore.openDeleteModal(post.id)"
+                isSecondary
+              />
+              <PrimaryButton
+                text="Редактировать"
+                @click="router.push(`/posts/edit/${post.id}`)"
+              />
+            </div>
+            <NuxtTime
+              :datetime="post.created_at"
+              year="2-digit"
+              month="2-digit"
+              day="numeric"
+              hour="2-digit"
+              minute="2-digit"
+            />
+          </div>
         </div>
+      </div>
+      <div v-else class="loading">
+        <p>Посты не найдены</p>
       </div>
     </div>
     <p v-else class="loading">Загрузка...</p>
@@ -114,15 +134,13 @@ const handleDeletePost = (id: number) => {
 }
 .post-actions {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
 }
-.secondary-btn {
-  background: #eee;
-  color: #222;
-  box-shadow: none;
-}
-.secondary-btn:hover {
-  background: #ddd;
+.post-actions-buttons {
+  display: flex;
+  gap: 1rem;
 }
 .loading {
   font-size: 1.5rem;

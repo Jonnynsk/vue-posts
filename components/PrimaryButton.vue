@@ -5,12 +5,13 @@ const props = defineProps<{
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
   class?: string;
+  isSecondary?: boolean;
 }>();
 </script>
 
 <template>
   <button
-    :class="['primary-btn', props.class]"
+    :class="['primary-btn', props.class, { 'secondary-btn': props.isSecondary }]"
     :disabled="props.disabled"
     :type="props.type"
     @click="props.onClick"
@@ -34,5 +35,13 @@ const props = defineProps<{
 }
 .primary-btn:hover {
   background: linear-gradient(90deg, #ff7b7b 0%, #ff5858 100%);
+}
+.secondary-btn {
+  background: #eee;
+  color: #222;
+  box-shadow: none;
+}
+.secondary-btn:hover {
+  background: #ddd;
 }
 </style>
