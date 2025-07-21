@@ -25,16 +25,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Clear npm cache
         run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm ci
-        
+        run: npm ci --no-optional
+        env:
+          OXC_DISABLE_NATIVE: "1"
+
       - name: Rebuild native modules
         run: npm rebuild
-        
+
       - name: Create .env file
         run: |
           echo "NUXT_PUBLIC_SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}" > .env
@@ -42,6 +46,8 @@ jobs:
 
       - name: Generate static site
         run: npm run generate
+        env:
+          OXC_DISABLE_NATIVE: "1"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
