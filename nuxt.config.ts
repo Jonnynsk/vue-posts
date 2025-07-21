@@ -10,6 +10,9 @@ export default defineNuxtConfig({
     },
   },
   ssr: false,
+  app: {
+    baseURL: process.env.NODE_ENV === "production" ? "/vue-posts/" : "/",
+  },
   nitro: {
     preset: "static",
   },
