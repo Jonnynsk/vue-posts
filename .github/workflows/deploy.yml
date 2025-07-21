@@ -13,14 +13,11 @@ jobs:
         with:
           node-version: "20"
       - run: npm install
-      - name: Create .env file
-        run: |
-          echo "NUXT_PUBLIC_SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}" > .env
-          echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env
+      - name: Build with environment variables
+        run: npm run build
         env:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
-      - run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
