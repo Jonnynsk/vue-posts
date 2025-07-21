@@ -1,77 +1,41 @@
 name: Deploy to GitHub Pages
-
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
+  push:
+    branches: master
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
         with:
-          node-version: "18"
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          
-      - name: Clear npm cache
-        run: npm cache clean --force
-
-      - name: Install dependencies
-        run: npm ci --no-optional
-        env:
-          OXC_DISABLE_NATIVE: "1"
-          OXC_DISABLE: "1"
-
-      - name: Rebuild native modules
-        run: npm rebuild
-        
-      - name: Run nuxt prepare
-        run: npm run postinstall
-        env:
-          OXC_DISABLE_NATIVE: "1"
-          OXC_DISABLE: "1"
-          NODE_OPTIONS: "--max-old-space-size=4096"
-        
+          node-version: "20"
+      - run: npm install
       - name: Create .env file
         run: |
           echo "NUXT_PUBLIC_SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}" > .env
           echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env
-
-      - name: Generate static site
-        run: npm run generate
-        env:
-          OXC_DISABLE_NATIVE: "1"
-          OXC_DISABLE: "1"
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
+      - run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .output/public
-
+          path: ./.output/public
+  # Deployment job
   deploy:
+    # Add a dependency to the build job
+    needs: build
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    # Deploy to the github_pages environment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    # Specify runner + deployment step
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
