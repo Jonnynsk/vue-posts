@@ -27,7 +27,7 @@ jobs:
           node-version: "18"
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
-
+          
       - name: Clear npm cache
         run: npm cache clean --force
 
@@ -35,10 +35,18 @@ jobs:
         run: npm ci --no-optional
         env:
           OXC_DISABLE_NATIVE: "1"
+          OXC_DISABLE: "1"
 
       - name: Rebuild native modules
         run: npm rebuild
-
+        
+      - name: Run nuxt prepare
+        run: npm run postinstall
+        env:
+          OXC_DISABLE_NATIVE: "1"
+          OXC_DISABLE: "1"
+          NODE_OPTIONS: "--max-old-space-size=4096"
+        
       - name: Create .env file
         run: |
           echo "NUXT_PUBLIC_SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}" > .env
@@ -48,6 +56,7 @@ jobs:
         run: npm run generate
         env:
           OXC_DISABLE_NATIVE: "1"
+          OXC_DISABLE: "1"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
