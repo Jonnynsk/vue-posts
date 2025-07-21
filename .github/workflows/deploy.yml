@@ -13,8 +13,15 @@ jobs:
         with:
           node-version: "20"
       - run: npm install
+      - name: Debug environment variables
+        run: |
+          echo "NUXT_PUBLIC_SUPABASE_URL exists: ${{ env.NUXT_PUBLIC_SUPABASE_URL != '' }}"
+          echo "NUXT_PUBLIC_SUPABASE_ANON_KEY exists: ${{ env.NUXT_PUBLIC_SUPABASE_ANON_KEY != '' }}"
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
       - name: Build with environment variables
-        run: npm run build
+        run: npm run generate
         env:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
