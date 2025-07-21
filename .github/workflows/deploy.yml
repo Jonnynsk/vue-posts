@@ -26,16 +26,22 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Clear npm cache
+        run: npm cache clean --force
 
+            - name: Install dependencies
+        run: npm ci
+        
+      - name: Rebuild native modules
+        run: npm rebuild
+        
       - name: Create .env file
         run: |
           echo "NUXT_PUBLIC_SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}" > .env
           echo "NUXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NUXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env
 
-      - name: Build
-        run: npm run build
+      - name: Generate static site
+        run: npm run generate
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
